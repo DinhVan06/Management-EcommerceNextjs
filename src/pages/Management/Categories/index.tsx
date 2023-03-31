@@ -241,6 +241,7 @@ function Category() {
                   .then((response: any) => {
                     message.success("Delete successfully");
                     setRefresh((pre) => pre + 1);
+                    setEditFormDelete(false);
                   })
                   .catch((err: any) => {
                     message.error("Delete failed");
@@ -328,6 +329,9 @@ function Category() {
 
           // load lại form
           setRefresh((pre) => pre + 1);
+
+          // thoát khỏi form
+          setCreateFormVisible(false);
         })
         .catch((err) => {
           console.log(err);
