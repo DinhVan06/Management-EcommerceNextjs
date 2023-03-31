@@ -7,6 +7,9 @@ import Home from "./Home";
 import Category from "./Management/Categories";
 import Products from "./Management/Products";
 import Suppliers from "./Management/Suppiler";
+import Orders from "./Management/Orders";
+import Employees from "./Management/Employees";
+import Customers from "./Management/Customers";
 const { Header, Footer, Sider, Content } = Layout;
 function List() {
   return (
@@ -27,6 +30,9 @@ function List() {
                 <Route path="/management/categories" element={<Category />} />
                 <Route path="/management/products" element={<Products />} />
                 <Route path="/management/suppliers" element={<Suppliers />} />
+                <Route path="/management/employees" element={<Employees />} />
+                <Route path="/management/customers" element={<Customers />} />
+                <Route path="/management/orders" element={<Orders />} />
               </Routes>
             </Content>
           </Layout>
