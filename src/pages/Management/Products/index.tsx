@@ -112,7 +112,7 @@ function Products() {
       dataIndex: "price",
       key: "price",
       render: (text: any) => {
-        return <span>{numeral(text).format("0,0")}</span>;
+        return <span>{numeral(text).format("0,0.0 $")}</span>;
       },
     },
     {
@@ -120,7 +120,7 @@ function Products() {
       dataIndex: "discount",
       key: "discount",
       render: (text: any) => {
-        return <span>{numeral(text).format("0,0.0")}%</span>;
+        return <span>{numeral(text).format("0,0.0")} %</span>;
       },
     },
     {
@@ -128,7 +128,15 @@ function Products() {
       dataIndex: "stock",
       key: "stock",
       render: (text: any) => {
-        return <span>{numeral(text).format("0,0.0")}</span>;
+        return <span>{numeral(text).format("0,0.0")} Kg</span>;
+      },
+    },
+    {
+      title: "Unit",
+      dataIndex: "unit",
+      key: "unit",
+      render: (text: any) => {
+        return <span>{numeral(text).format("0,0.0")} Kg</span>;
       },
     },
     {
@@ -216,7 +224,7 @@ function Products() {
       dataIndex: "price",
       key: "price",
       render: (text: any) => {
-        return <span>{numeral(text).format("0,0$")}</span>;
+        return <span>{numeral(text).format("0,0.0 $")}</span>;
       },
     },
     {
@@ -224,7 +232,7 @@ function Products() {
       dataIndex: "discount",
       key: "discount",
       render: (text: any) => {
-        return <span>{numeral(text).format("0,0.0")}%</span>;
+        return <span>{numeral(text).format("0,0.0")} %</span>;
       },
     },
     {
@@ -232,7 +240,7 @@ function Products() {
       dataIndex: "stock",
       key: "stock",
       render: (text: any) => {
-        return <span>{numeral(text).format("0,0.0")}</span>;
+        return <span>{numeral(text).format("0,0.0")} Kg</span>;
       },
     },
     {
@@ -361,6 +369,7 @@ function Products() {
 
           // load lại form
           setRefresh((pre) => pre + 1);
+          setCreateFormVisible(false);
         })
         .catch((err) => {
           console.log(err);
@@ -514,7 +523,7 @@ function Products() {
                 },
               ]}
             >
-              <InputNumber className="w-[50%]" addonAfter="VND" />
+              <InputNumber className="w-[50%]" addonAfter="$" />
             </Form.Item>
 
             {/* Giảm giá */}
@@ -556,6 +565,29 @@ function Products() {
                     if (value < 0) {
                       return Promise.reject(
                         new Error("Stock must be greater than 0")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <InputNumber className="w-[50%]" />
+            </Form.Item>
+
+            {/* Đơn vị tính */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Unit"
+              name="unit"
+              rules={[
+                { required: true, message: "Can not be empty 'unit'" },
+                {
+                  validator: (_, value) => {
+                    if (value < 0) {
+                      return Promise.reject(
+                        new Error("Unit must be greater than 0")
                       );
                     }
                     return Promise.resolve();
@@ -735,6 +767,28 @@ function Products() {
                     if (value < 0) {
                       return Promise.reject(
                         new Error("Stock must be greater than 0")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <InputNumber className="w-[50%]" />
+            </Form.Item>
+            {/* Đơn vị tính */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Unit"
+              name="unit"
+              rules={[
+                { required: true, message: "Can not be empty 'unit'" },
+                {
+                  validator: (_, value) => {
+                    if (value < 0) {
+                      return Promise.reject(
+                        new Error("Unit must be greater than 0")
                       );
                     }
                     return Promise.resolve();
