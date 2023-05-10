@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Modal, Space, Table, Upload } from "antd";
+import { Modal, Space, Table, Upload, InputNumber } from "antd";
 import { Image, Button, Form, Input, message, Popconfirm } from "antd";
 import { axiosClient } from "../../../libraries/axiosClient.js";
 import {
@@ -24,8 +24,10 @@ function Category() {
   const [createFormVisible, setCreateFormVisible] = React.useState(false);
   // sửa
   const [editFormVisible, setEditFormVisible] = React.useState(false);
+
   // load lại form khi thực hiện hành công nào đó thành công
   const [refresh, setRefresh] = React.useState(0);
+
   const [file, setFile] = React.useState<any>(null);
   // xem chi tiết hình ảnh
   const [isPreview, setIsPreview] = React.useState(false);
@@ -35,7 +37,7 @@ function Category() {
   // table
   const columns = [
     {
-      title: "Image",
+      title: "Hình ảnh",
       key: "imageUrl",
       dataIndex: "imageUrl",
       width: "10%",
@@ -81,15 +83,23 @@ function Category() {
       },
     },
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
+      title: "Loại danh mục",
+      dataIndex: "categoryType",
+      key: "categoryType",
       render: (text: any) => {
         return <strong style={{ color: "blue" }}>{text}</strong>;
       },
     },
     {
-      title: "Description",
+      title: "Số Calo",
+      dataIndex: "calories",
+      key: "calories",
+      render: (text: any) => {
+        return <strong style={{ color: "blue" }}>{text}</strong>;
+      },
+    },
+    {
+      title: "Mô tả",
       dataIndex: "description",
       key: "description",
       render: (text: any) => {
@@ -116,10 +126,10 @@ function Category() {
                 }
 
                 if (info.file.status === "done") {
-                  message.success(`${info.file.name} Add file successfully`);
+                  message.success(`${info.file.name} Thêm thành công`);
                   setRefresh((pre) => pre + 1);
                 } else if (info.file.status === "error") {
-                  message.error(`${info.file.name} Add file failed`);
+                  message.error(`${info.file.name} Thêm thất bại`);
                 }
               }}
             >
@@ -127,7 +137,7 @@ function Category() {
             </Upload>
             {/* delete */}
             <Popconfirm
-              title="Are you sure you want to delete?"
+              title="Bạn có chắc chắn muốn xóa không?"
               onConfirm={() => {
                 //delete
                 const id = record._id;
@@ -135,18 +145,18 @@ function Category() {
                   .patch("/categories/" + id, { isDelete: true })
                   .then((response: any) => {
                     message.success(
-                      "Deleted items have been stored in garbage category"
+                      "Đã xóa thành công và lưu vào danh mục rác"
                     );
                     setRefresh((pre) => pre + 1);
                   })
                   .catch((err: any) => {
-                    message.error("Delete failed");
+                    message.error("Xóa thất bại");
                   });
                 //console.log("delete", record);
               }}
               onCancel={() => {}}
-              okText={<p className="text-black">yes</p>}
-              cancelText="No"
+              okText={<p className="text-black">Có</p>}
+              cancelText="Không"
             >
               <Button danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -170,7 +180,7 @@ function Category() {
   // table delete
   const columnsDelete = [
     {
-      title: "Image",
+      title: "Hình ảnh",
       key: "imageUrl",
       dataIndex: "imageUrl",
       width: "10%",
@@ -216,7 +226,7 @@ function Category() {
       },
     },
     {
-      title: "Name",
+      title: "Tên danh mục",
       dataIndex: "name",
       key: "name",
       render: (text: any) => {
@@ -232,19 +242,19 @@ function Category() {
           <Space>
             {/* delete */}
             <Popconfirm
-              title="Are you sure you want to delete it permanently?"
+              title="Bạn chắc chắn muốn xóa?"
               onConfirm={() => {
                 //delete
                 const id = record._id;
                 axiosClient
                   .delete("/categories/" + id)
                   .then((response: any) => {
-                    message.success("Delete successfully");
+                    message.success("Xóa thành công");
                     setRefresh((pre) => pre + 1);
                     setEditFormDelete(false);
                   })
                   .catch((err: any) => {
-                    message.error("Delete failed");
+                    message.error("Xóa thất bại");
                   });
                 //console.log("delete", record);
               }}
@@ -262,13 +272,13 @@ function Category() {
                 axiosClient
                   .patch("/categories/" + id, { isDelete: false })
                   .then((response) => {
-                    message.success("Restore successfully");
+                    message.success("Khôi phục thành công");
                     setRefresh((f) => f + 1);
                     setEditFormDelete(false);
                   })
                   .catch((err) => {
                     console.log(err);
-                    message.error("Restore failed");
+                    message.error("Khôi phục thất bại");
                   });
               }}
               className="flex items-center bg-blue-400 rounded-2xl text-white"
@@ -364,39 +374,33 @@ function Category() {
   const onUpdateFinishFailed = (errors: any) => {
     //console.log("💣", errors);
   };
+
+  // validate
+  const validateNumber = (rule: any, value: any, callback: any) => {
+    if (!isNaN(value)) {
+      callback();
+    } else {
+      callback("Hãy nhập số");
+    }
+  };
   // form nhập liệu
   return (
     <>
       <div className="text-blue-700 font-bold text-[25px] text-center mb-10">
-        Categories
+        DANH MỤC
       </div>
-
-      <div>
-        <div className="flex mb-5">
-          <Button
-            className="bg-blue-500 font-bold mr-6"
-            onClick={() => {
-              setCreateFormVisible(true);
-              console.log("ok");
-            }}
-          >
-            <p className="text-white">Add new category</p>
-          </Button>
-          <Button
-            danger
-            className="text-right flex items-center"
-            onClick={() => {
-              setEditFormDelete(true);
-            }}
-          >
-            Recycle bin <AiFillDelete size={"20px"} />
-          </Button>
+      <div className="flex mb-4">
+        <p className="flex-auto font-bold">Danh sách danh mục</p>
+        <div className="total-categories font-bold">
+          <span className="text-black">Tổng: </span>
+          <span className="text-red-600">{categories.length} danh mục</span>
         </div>
-
+      </div>
+      <div>
         <Modal
           centered
           open={createFormVisible}
-          title="Add new Category"
+          title="Thêm danh mục"
           onOk={() => {
             createForm.submit();
             //setCreateFormVisible(false);
@@ -415,9 +419,9 @@ function Category() {
             initialValues={{ remember: true }}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
-            autoComplete="on"
+            autoComplete="off"
           >
-            <Form.Item label="Image" name="file">
+            <Form.Item label="Hình ảnh" name="file">
               <Upload
                 showUploadList={true}
                 beforeUpload={(file) => {
@@ -425,20 +429,30 @@ function Category() {
                   return false;
                 }}
               >
-                <Button icon={<UploadOutlined />}>Please choose image</Button>
+                <Button icon={<UploadOutlined />}>Chọn hình ảnh</Button>
               </Upload>
             </Form.Item>
             <Form.Item
               hasFeedback
-              label="Name Category"
-              name="name"
+              label="Loại danh mục"
+              name="categoryType"
               rules={[
-                { required: true, message: "Can not be empty 'category name'" },
+                { required: true, message: "Loại danh mục không thể để trống" },
               ]}
             >
-              <Input />
+              <Input placeholder="Trái cây" />
             </Form.Item>
-            <Form.Item hasFeedback label="Description" name="description">
+            <Form.Item
+              hasFeedback
+              label="Số Calo"
+              name="calories"
+              rules={[
+                { required: true, message: "Số lượng calo không thể để trống" },
+              ]}
+            >
+              <InputNumber className="w-[40%]" addonAfter="Calo" />
+            </Form.Item>
+            <Form.Item hasFeedback label="Mô tả" name="description">
               <Input />
             </Form.Item>
           </Form>
@@ -450,15 +464,15 @@ function Category() {
         <Modal
           centered
           open={editFormVisible}
-          title="Update Category"
+          title="Cập nhật danh mục"
           onOk={() => {
             updateForm.submit();
           }}
           onCancel={() => {
             setEditFormVisible(false);
           }}
-          okText={<p className="text-black">Save</p>}
-          cancelText="Close"
+          okText={<p className="text-black">Lưu</p>}
+          cancelText="Thoát"
         >
           <Form
             form={updateForm}
@@ -470,7 +484,7 @@ function Category() {
             onFinishFailed={onUpdateFinishFailed}
             autoComplete="on"
           >
-            <Form.Item label="Image" name="file">
+            <Form.Item label="Hình ảnh" name="file">
               <Upload
                 showUploadList={true}
                 beforeUpload={(file) => {
@@ -478,37 +492,77 @@ function Category() {
                   return false;
                 }}
               >
-                <Button icon={<UploadOutlined />}>Please choose image</Button>
+                <Button icon={<UploadOutlined />}>Chọn hình ảnh</Button>
               </Upload>
             </Form.Item>
             <Form.Item
               hasFeedback
-              label="Name Category"
-              name="name"
+              label="Loại danh mục"
+              name="categoryType"
               rules={[
-                { required: true, message: "Can not be empty 'category name'" },
+                { required: true, message: "Loại danh mục không thể để trống" },
               ]}
             >
-              <Input />
+              <Input placeholder="Trái cây" />
             </Form.Item>
-            <Form.Item hasFeedback label="Description" name="description">
+            <Form.Item
+              hasFeedback
+              label="Số Calo"
+              name="calories"
+              rules={[
+                { required: true, message: "Số lượng calo không thể để trống" },
+                { validator: validateNumber },
+                {
+                  validator: (_, value) => {
+                    if (value < 0) {
+                      return Promise.reject(
+                        new Error("Số Calo phải lớn hơn 0")
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <InputNumber className="w-[40%]" addonAfter="Calo" />
+            </Form.Item>
+            <Form.Item hasFeedback label="Mô tả" name="description">
               <Input />
             </Form.Item>
           </Form>
         </Modal>
         <Modal
           centered
-          title="Garbage List"
+          title="Danh mục rác"
           open={editFormDelete}
           onCancel={() => {
             setEditFormDelete(false);
           }}
-          okText={<p className="text-black">Save</p>}
-          cancelText="Exit"
+          okText={<p className="text-black">Lưu</p>}
+          cancelText="Thoát"
           className="ant-modal"
         >
           <Table rowKey={"_id"} dataSource={isDelete} columns={columnsDelete} />
         </Modal>
+      </div>
+      <div className="flex mt-5 ">
+        <Button
+          className="bg-blue-500 font-bold mr-6"
+          onClick={() => {
+            setCreateFormVisible(true);
+          }}
+        >
+          <p className="text-white">Thêm danh mục</p>
+        </Button>
+        <Button
+          danger
+          className="text-right flex items-center"
+          onClick={() => {
+            setEditFormDelete(true);
+          }}
+        >
+          Thùng rác <AiFillDelete size={"20px"} />
+        </Button>
       </div>
     </>
   );

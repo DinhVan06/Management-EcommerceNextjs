@@ -40,7 +40,7 @@ function Customers() {
   const [isPreview, setIsPreview] = useState<any>(false);
   const columns = [
     {
-      title: "Image",
+      title: "Hình ảnh",
       key: "imageUrl",
       dataIndex: "imageUrl",
       width: "10%",
@@ -127,10 +127,10 @@ function Customers() {
                 }
 
                 if (info.file.status === "done") {
-                  message.success(`${info.file.name} Add file successfully`);
+                  message.success(`${info.file.name} Thêm thành công`);
                   setRefresh((pre) => pre + 1);
                 } else if (info.file.status === "error") {
-                  message.error(`${info.file.name} Add file failed`);
+                  message.error(`${info.file.name} Thêm thất bại`);
                 }
               }}
             >
@@ -149,7 +149,7 @@ function Customers() {
             />
             {/* delete */}
             <Popconfirm
-              title="Are you sure you want to delete?"
+              title="Bạn chắn chắn muốn xóa?"
               onConfirm={() => {
                 //delete
                 const id = record._id;
@@ -157,18 +157,18 @@ function Customers() {
                   .patch("/customers/" + id, { isDelete: true })
                   .then((response: any) => {
                     message.success(
-                      "Deleted items have been stored in garbage category"
+                      "Đã xóa thành công và lưu vào danh mục rác"
                     );
                     setRefresh((pre) => pre + 1);
                   })
                   .catch((err: any) => {
-                    message.error("Delete failed");
+                    message.error("Xóa thất bại");
                   });
                 //console.log("delete", record);
               }}
               onCancel={() => {}}
-              okText={<p className="text-black">yes</p>}
-              cancelText="No"
+              okText={<p className="text-black">Có</p>}
+              cancelText="Không"
             >
               <Button danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -202,24 +202,24 @@ function Customers() {
           <Space>
             {/* delete */}
             <Popconfirm
-              title="Are you sure you want to delete it permanently?"
+              title="Bạn có muốn xóa vĩnh viễn không"
               onConfirm={() => {
                 //delete
                 const id = record._id;
                 axiosClient
                   .delete("/customers/" + id)
                   .then((response: any) => {
-                    message.success("Delete successfully");
+                    message.success("Xóa thành công");
                     setRefresh((pre) => pre + 1);
                   })
                   .catch((err: any) => {
-                    message.error("Delete failed");
+                    message.error("Xóa thất bại");
                   });
                 //console.log("delete", record);
               }}
               onCancel={() => {}}
-              okText={<p className="text-black">yes</p>}
-              cancelText="No"
+              okText={<p className="text-black">Có</p>}
+              cancelText="Không"
             >
               <Button danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -231,20 +231,20 @@ function Customers() {
                 axiosClient
                   .patch("/customers/" + id, { isDelete: false })
                   .then((response) => {
-                    message.success("Restore successfully");
+                    message.success("Khôi phục thành công");
                     setRefresh((pre) => pre + 1);
                     setEditFormDelete(false);
                   })
                   .catch((err) => {
                     console.log(err);
-                    message.error("Restore failed");
+                    message.error("Khôi phục thất bại");
                   });
               }}
               className="flex items-center bg-blue-400 rounded-2xl text-white"
             >
               <div className="flex hover:text-black">
                 <FaTrashRestore size={"16px"} style={{ marginRight: "5px" }} />
-                Restore
+                Khôi phục
               </div>
             </Button>
           </Space>
@@ -298,7 +298,7 @@ function Customers() {
         .post(API_URL + "/upload/customers/" + _id, formData)
         .then((respose) => {
           //console.log(respose.data);
-          message.success("Add success❤");
+          message.success("Thêm thành công❤");
           // reset dữ liệu đã nhập ở form nhập
           createForm.resetFields();
 
@@ -307,11 +307,9 @@ function Customers() {
         })
         .catch((err) => {
           console.log(err);
-          message.error("Add failed😥");
+          message.error("Thêm thất bại😥");
         });
     });
-
-    console.log("❤", values);
   };
   const onFinishFailed = (errors: any) => {
     //console.log("💣", errors);
@@ -321,7 +319,7 @@ function Customers() {
     axiosClient
       .patch("/customers/" + selectedRecord._id, values)
       .then((response) => {
-        message.success("Update success ❤");
+        message.success("Cập nhật thành công ❤");
         updateForm.resetFields();
         // load lại form
         setRefresh((pre) => pre + 1);
@@ -329,7 +327,7 @@ function Customers() {
         setEditFormVisible(false);
       })
       .catch((err: any) => {
-        message.error("Update failed😥");
+        message.error("Cập nhật thất bại😥");
       });
     //console.log("❤", values);
   };
@@ -367,30 +365,16 @@ function Customers() {
   return (
     <>
       <div className="text-blue-700 font-bold text-[25px] text-center mb-10">
-        Customers
+        KHÁCH HÀNG
+      </div>
+      <div className="flex mb-4">
+        <p className="flex-auto font-bold">Danh sách khách hàng</p>
+        <div className="total-categories font-bold">
+          <span className="text-black">Tổng: </span>
+          <span className="text-red-600">{customers.length} khách hàng</span>
+        </div>
       </div>
       <div>
-        <div className="flex mb-5">
-          <Button
-            className="bg-blue-500 text-white font-bold mr-6"
-            onClick={() => {
-              setCreateFormVisible(true);
-              console.log("ok");
-            }}
-          >
-            Add new customers
-          </Button>
-          <Button
-            danger
-            className="text-right flex items-center"
-            onClick={() => {
-              setEditFormDelete(true);
-            }}
-          >
-            Recycle bin <AiFillDelete size={"20px"} />
-          </Button>
-        </div>
-
         {/* modal thêm mới */}
         <div className="ant-modal-content">
           <Modal
@@ -399,12 +383,11 @@ function Customers() {
             title="Thêm mới thông tin khách hàng"
             onOk={() => {
               createForm.submit();
-              setCreateFormVisible(false);
             }}
             onCancel={() => {
               setCreateFormVisible(false);
             }}
-            okText={<p className="text-black">Add</p>}
+            okText={<p className="text-black">Thêm</p>}
             cancelText="Đóng"
             className="w-[50rem]"
           >
@@ -471,8 +454,6 @@ function Customers() {
                   name="phoneNumber"
                   rules={[
                     { required: true, message: "Số điện thoại bắt buộc nhập!" },
-                    { min: 10, message: "Số điện thoại không quá 10 chữ số!" },
-                    { max: 10, message: "Số điện thoại không quá 10 chữ số!" },
                     {
                       validator: phoneValidator,
                     },
@@ -550,7 +531,7 @@ function Customers() {
           onCancel={() => {
             setEditFormVisible(false);
           }}
-          okText="Lưu thay đổi"
+          okText={<p className="text-black">Lưu</p>}
           cancelText="Đóng"
         >
           <Form
@@ -669,17 +650,37 @@ function Customers() {
         </Modal>
         <Modal
           centered
-          title="Garbage List"
+          title="Danh sách rác"
           open={editFormDelete}
           onCancel={() => {
             setEditFormDelete(false);
           }}
-          okText={<p className="text-black">Save</p>}
-          cancelText="Exit"
+          okText={<p className="text-black">Lưu</p>}
+          cancelText="Thoát"
           className="ant-modal"
         >
           <Table rowKey={"_id"} dataSource={isDelete} columns={columnsDelete} />
         </Modal>
+      </div>
+      <div className="flex mt-5">
+        <Button
+          className="bg-blue-500 text-white font-bold mr-6"
+          onClick={() => {
+            setCreateFormVisible(true);
+            console.log("ok");
+          }}
+        >
+          Thêm khách hàng
+        </Button>
+        <Button
+          danger
+          className="text-right flex items-center"
+          onClick={() => {
+            setEditFormDelete(true);
+          }}
+        >
+          Thùng rác <AiFillDelete size={"20px"} />
+        </Button>
       </div>
     </>
   );

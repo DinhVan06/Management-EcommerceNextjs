@@ -44,7 +44,7 @@ function Products() {
   // table view
   const columns = [
     {
-      title: "Image",
+      title: "Hình ảnh",
       key: "imageUrl",
       dataIndex: "imageUrl",
       width: "10%",
@@ -90,15 +90,62 @@ function Products() {
       },
     },
     {
-      title: "Category",
-      dataIndex: "category",
-      key: "category",
+      title: "Hình ảnh chi tiết",
+      dataIndex: "images",
+      key: "images",
       render: (text: any, record: any) => {
-        return <strong>{record?.category?.name}</strong>;
+        return (
+          <div>
+            <div style={{ marginRight: "10px", display: "inline-block" }}>
+              {record &&
+                record.images &&
+                record.images.map((image: any) => {
+                  return (
+                    <img
+                      style={{ width: "60px" }}
+                      key={image}
+                      src={`${API_URL}${image}`}
+                      alt=""
+                    />
+                  );
+                })}
+            </div>
+            <div style={{ display: "inline-block" }}>
+              <Upload
+                showUploadList={false}
+                name="file"
+                action={API_URL + "/upload/products/" + record._id + "/images"}
+                headers={{ authorization: "authorization-text" }}
+                onChange={(info) => {
+                  if (info.file.status !== "uploading") {
+                    console.log(info.file, info.fileList);
+                  }
+
+                  if (info.file.status === "done") {
+                    message.success("thêm file thành công");
+                    setRefresh((pre) => pre + 1);
+                  } else if (info.file.status === "error") {
+                    message.error("thêm file thất bại");
+                  }
+                }}
+              >
+                <Button icon={<UploadOutlined />} />
+              </Upload>
+            </div>
+          </div>
+        );
       },
     },
     {
-      title: "Products name",
+      title: "Loại danh mục",
+      dataIndex: "categoryType",
+      key: "categoryType",
+      render: (text: any, record: any) => {
+        return <strong>{record?.category?.categoryType}</strong>;
+      },
+    },
+    {
+      title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
       width: "15%",
@@ -108,15 +155,15 @@ function Products() {
     },
 
     {
-      title: "Price",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
       render: (text: any) => {
-        return <span>{numeral(text).format("0,0.0 $")}</span>;
+        return <span>{numeral(text).format("0,0")}</span>;
       },
     },
     {
-      title: "Discount",
+      title: "Giảm giá",
       dataIndex: "discount",
       key: "discount",
       render: (text: any) => {
@@ -124,19 +171,19 @@ function Products() {
       },
     },
     {
-      title: "Stock",
+      title: "Tồn kho",
       dataIndex: "stock",
       key: "stock",
       render: (text: any) => {
-        return <span>{numeral(text).format("0,0.0")} Kg</span>;
+        return <span>{numeral(text).format("0,0")} </span>;
       },
     },
     {
-      title: "Unit",
+      title: "Đơn vị",
       dataIndex: "unit",
       key: "unit",
       render: (text: any) => {
-        return <span>{numeral(text).format("0,0.0")} Kg</span>;
+        return <span>{text}</span>;
       },
     },
     {
@@ -158,10 +205,10 @@ function Products() {
                 }
 
                 if (info.file.status === "done") {
-                  message.success(`${info.file.name} Add file successfully`);
+                  message.success(`${info.file.name} Thêm thành công`);
                   setRefresh((pre) => pre + 1);
                 } else if (info.file.status === "error") {
-                  message.error(`${info.file.name} Add file failed`);
+                  message.error(`${info.file.name} Thêm thất bại`);
                 }
               }}
             >
@@ -169,26 +216,24 @@ function Products() {
             </Upload>
             {/* delete */}
             <Popconfirm
-              title="Are you sure you want to delete?"
+              title="Bạn có chắc muốn xóa?"
               onConfirm={() => {
                 //delete
                 const id = record._id;
                 axiosClient
                   .patch("/products/" + id, { isDelete: true })
                   .then((response: any) => {
-                    message.success(
-                      "Deleted items have been stored in garbage category"
-                    );
+                    message.success("Xóa thành công và thêm vào danh mục rác");
                     setRefresh((pre) => pre + 1);
                   })
                   .catch((err: any) => {
-                    message.error("Delete failed");
+                    message.error("Xóa thất bại");
                   });
                 //console.log("delete", record);
               }}
               onCancel={() => {}}
-              okText={<p className="text-black">yes</p>}
-              cancelText="No"
+              okText={<p className="text-black">Có</p>}
+              cancelText="Không"
             >
               <Button danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -210,7 +255,7 @@ function Products() {
   ];
   const columnsDelete = [
     {
-      title: "Products name",
+      title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
       width: "15%",
@@ -220,7 +265,7 @@ function Products() {
     },
 
     {
-      title: "Price",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
       render: (text: any) => {
@@ -228,7 +273,7 @@ function Products() {
       },
     },
     {
-      title: "Discount",
+      title: "Giảm giá",
       dataIndex: "discount",
       key: "discount",
       render: (text: any) => {
@@ -236,7 +281,7 @@ function Products() {
       },
     },
     {
-      title: "Stock",
+      title: "Tồn kho",
       dataIndex: "stock",
       key: "stock",
       render: (text: any) => {
@@ -252,24 +297,24 @@ function Products() {
           <Space>
             {/* delete */}
             <Popconfirm
-              title="Are you sure you want to delete it permanently?"
+              title="Bạn có chắc muốn xóa vĩnh viễn không?"
               onConfirm={() => {
                 //delete
                 const id = record._id;
                 axiosClient
                   .delete("/products/" + id)
                   .then((response: any) => {
-                    message.success("Delete successfully");
+                    message.success("Xóa thành công");
                     setRefresh((pre) => pre + 1);
                   })
                   .catch((err: any) => {
-                    message.error("Delete failed");
+                    message.error("Xóa thất bại");
                   });
                 //console.log("delete", record);
               }}
               onCancel={() => {}}
-              okText={<p className="text-black">yes</p>}
-              cancelText="No"
+              okText={<p className="text-black">Có</p>}
+              cancelText="Không"
             >
               <Button danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -281,20 +326,20 @@ function Products() {
                 axiosClient
                   .patch("/products/" + id, { isDelete: false })
                   .then((response) => {
-                    message.success("Restore successfully");
+                    message.success("Khôi phục thành công");
                     setRefresh((pre) => pre + 1);
                     setEditFormDelete(false);
                   })
                   .catch((err) => {
                     console.log(err);
-                    message.error("Restore failed");
+                    message.error("Khôi phục thất bại");
                   });
               }}
               className="flex items-center bg-blue-400 rounded-2xl text-white"
             >
               <div className="flex hover:text-black">
                 <FaTrashRestore size={"16px"} style={{ marginRight: "5px" }} />
-                Restore
+                Khôi phục
               </div>
             </Button>
           </Space>
@@ -363,7 +408,7 @@ function Products() {
         .post(API_URL + "/upload/products/" + _id, formData)
         .then((respose) => {
           //console.log(respose.data);
-          message.success("Add success❤");
+          message.success("Thêm thành công❤");
           // reset dữ liệu đã nhập ở form nhập
           createForm.resetFields();
 
@@ -373,11 +418,9 @@ function Products() {
         })
         .catch((err) => {
           console.log(err);
-          message.error("Add failed😥");
+          message.error("Thêm thất bại😥");
         });
     });
-
-    console.log("❤", values);
   };
   const onFinishFailed = (errors: any) => {
     //console.log("💣", errors);
@@ -387,7 +430,7 @@ function Products() {
     axiosClient
       .patch("/products/" + selectedRecord._id, values)
       .then((response) => {
-        message.success("Update success ❤");
+        message.success("Cập nhật thành công❤");
         updateForm.resetFields();
         // load lại form
         setRefresh((pre) => pre + 1);
@@ -395,7 +438,7 @@ function Products() {
         setEditFormVisible(false);
       })
       .catch((err: any) => {
-        message.error("Update failed😥");
+        message.error("Cập nhật thất bại😥");
       });
     //console.log("❤", values);
   };
@@ -405,34 +448,20 @@ function Products() {
   return (
     <>
       <div className="text-blue-700 font-bold text-[25px] text-center mb-10">
-        Products
+        SẢN PHẨM
+      </div>
+      <div className="flex mb-4">
+        <p className="flex-auto font-bold">Danh sách sản phẩm</p>
+        <div className="total-categories font-bold">
+          <span className="text-black">Tổng: </span>
+          <span className="text-red-600">{products.length} sản phẩm</span>
+        </div>
       </div>
       <div>
-        <div className="flex mb-5">
-          <Button
-            className="bg-blue-500 font-bold mr-6"
-            onClick={() => {
-              setCreateFormVisible(true);
-              console.log("ok");
-            }}
-          >
-            <p className="text-white">Add new products</p>
-          </Button>
-          <Button
-            danger
-            className="text-right flex items-center"
-            onClick={() => {
-              setEditFormDelete(true);
-            }}
-          >
-            Recycle bin <AiFillDelete size={"20px"} />
-          </Button>
-        </div>
-
         <Modal
           centered
           open={createFormVisible}
-          title="Add new Category"
+          title="Thêm sản phẩm"
           onOk={() => {
             createForm.submit();
             //setCreateFormVisible(false);
@@ -440,8 +469,8 @@ function Products() {
           onCancel={() => {
             setCreateFormVisible(false);
           }}
-          okText={<p className="text-black">Add</p>}
-          cancelText="Close"
+          okText={<p className="text-black">Thêm</p>}
+          cancelText="Thoát"
         >
           <Form
             form={createForm}
@@ -454,7 +483,7 @@ function Products() {
             autoComplete="on"
           >
             {/* hình ảnh */}
-            <Form.Item label="Image" name="file">
+            <Form.Item label="Hình ảnh" name="file">
               <Upload
                 showUploadList={true}
                 beforeUpload={(file) => {
@@ -462,17 +491,17 @@ function Products() {
                   return false;
                 }}
               >
-                <Button icon={<UploadOutlined />}>Please choose image</Button>
+                <Button icon={<UploadOutlined />}>Chọn hình ảnh</Button>
               </Upload>
             </Form.Item>
             {/* Danh mục sản phẩm */}
             <Form.Item
-              label="Category"
+              label="Loại Danh mục"
               name="categoryId"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'category'",
+                  message: "Danh mục không để trống",
                 },
               ]}
             >
@@ -482,7 +511,7 @@ function Products() {
                   categories.map((category: any) => {
                     return {
                       value: category._id,
-                      label: category.name,
+                      label: category.categoryType,
                     };
                   })
                 }
@@ -492,12 +521,12 @@ function Products() {
             {/* Tên sản phẩm */}
             <Form.Item
               hasFeedback
-              label="Products Name"
+              label="Tên sản phẩm"
               name="name"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'products name'",
+                  message: "Tên sản phẩm  không để trống",
                 },
               ]}
             >
@@ -507,16 +536,14 @@ function Products() {
             {/* Giá tiền */}
             <Form.Item
               hasFeedback
-              label="Price"
+              label="Giá"
               name="price"
               rules={[
-                { required: true, message: "Can not be empty 'price'" },
+                { required: true, message: "Giá không để trống" },
                 {
                   validator: (_, value) => {
                     if (value < 0) {
-                      return Promise.reject(
-                        new Error("Price must be greater than 0")
-                      );
+                      return Promise.reject(new Error("Giá phải lớn hơn 0"));
                     }
                     return Promise.resolve();
                   },
@@ -530,18 +557,18 @@ function Products() {
             <Form.Item
               hasFeedback
               className=""
-              label="Discount"
+              label="Giảm giá"
               name="discount"
               rules={[
                 {
                   validator: (_, value) => {
                     if (value < 0) {
                       return Promise.reject(
-                        new Error("Discount must be greater than 0")
+                        new Error("Giảm giá phải lớn hơn hoặc bằng 0")
                       );
                     } else if (value > 100) {
                       return Promise.reject(
-                        new Error("Discount must be less than 100")
+                        new Error("Giảm giá phải nhỏ hơn hoặc bằng 100")
                       );
                     }
                     return Promise.resolve();
@@ -556,15 +583,15 @@ function Products() {
             <Form.Item
               hasFeedback
               className=""
-              label="Stock"
+              label="Tồn kho"
               name="stock"
               rules={[
-                { required: true, message: "Can not be empty 'stock'" },
+                { required: true, message: "Tồn kho không để trống" },
                 {
                   validator: (_, value) => {
                     if (value < 0) {
                       return Promise.reject(
-                        new Error("Stock must be greater than 0")
+                        new Error("Tồn kho lớn hơn bằng 0")
                       );
                     }
                     return Promise.resolve();
@@ -579,32 +606,20 @@ function Products() {
             <Form.Item
               hasFeedback
               className=""
-              label="Unit"
+              label="Đơn vị"
               name="unit"
-              rules={[
-                { required: true, message: "Can not be empty 'unit'" },
-                {
-                  validator: (_, value) => {
-                    if (value < 0) {
-                      return Promise.reject(
-                        new Error("Unit must be greater than 0")
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
+              rules={[{ required: true, message: "Đơn vị không để trống" }]}
             >
-              <InputNumber className="w-[50%]" />
+              <Input placeholder={`"1kg" hoặc "1 lon" hoặc "1 cây"`} />
             </Form.Item>
             {/* Nhà cung cấp */}
             <Form.Item
-              label="Suppliers"
+              label="Nhà cung cấp"
               name="supplierId"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'suppliers'",
+                  message: "Nhà cung cấp không để trống",
                 },
               ]}
             >
@@ -622,7 +637,7 @@ function Products() {
             </Form.Item>
 
             {/* Mô tả */}
-            <Form.Item hasFeedback label="Description" name="description">
+            <Form.Item hasFeedback label="Mô tả" name="description">
               <TextArea rows={5} />
             </Form.Item>
           </Form>
@@ -634,15 +649,15 @@ function Products() {
         <Modal
           centered
           open={editFormVisible}
-          title="Update Category"
+          title="Cập nhật sản phẩm"
           onOk={() => {
             updateForm.submit();
           }}
           onCancel={() => {
             setEditFormVisible(false);
           }}
-          okText={<p className="text-black">Save</p>}
-          cancelText="Close"
+          okText={<p className="text-black">Lưu</p>}
+          cancelText="Thoát"
         >
           <Form
             form={updateForm}
@@ -655,7 +670,7 @@ function Products() {
             autoComplete="on"
           >
             {/* hình ảnh */}
-            <Form.Item label="Image" name="file">
+            <Form.Item label="Hình ảnh" name="file">
               <Upload
                 showUploadList={true}
                 beforeUpload={(file) => {
@@ -663,17 +678,17 @@ function Products() {
                   return false;
                 }}
               >
-                <Button icon={<UploadOutlined />}>Please choose image</Button>
+                <Button icon={<UploadOutlined />}>Chọn hình ảnh</Button>
               </Upload>
             </Form.Item>
             {/* Danh mục sản phẩm */}
             <Form.Item
-              label="Category"
+              label="Loại Danh mục"
               name="categoryId"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'category'",
+                  message: "Danh mục không để trống",
                 },
               ]}
             >
@@ -683,7 +698,7 @@ function Products() {
                   categories.map((category: any) => {
                     return {
                       value: category._id,
-                      label: category.name,
+                      label: category.categoryType,
                     };
                   })
                 }
@@ -694,12 +709,12 @@ function Products() {
             <Form.Item
               hasFeedback
               className=""
-              label="Products Name"
+              label="Tên sản phẩm"
               name="name"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'products name'",
+                  message: "Tên sản phẩm không để trống",
                 },
               ]}
             >
@@ -709,15 +724,15 @@ function Products() {
             {/* Giá tiền */}
             <Form.Item
               hasFeedback
-              label="Price"
+              label="Giá"
               name="price"
               rules={[
-                { required: true, message: "Can not be empty 'price'" },
+                { required: true, message: "Giá không để trống" },
                 {
                   validator: (_, value) => {
                     if (value < 0) {
                       return Promise.reject(
-                        new Error("Price must be greater than 0")
+                        new Error("Giá lớn hơn hoặc bằng 0")
                       );
                     }
                     return Promise.resolve();
@@ -732,18 +747,18 @@ function Products() {
             <Form.Item
               hasFeedback
               className=""
-              label="Discount"
+              label="Giảm giá"
               name="discount"
               rules={[
                 {
                   validator: (_, value) => {
                     if (value < 0) {
                       return Promise.reject(
-                        new Error("Discount must be greater than 0")
+                        new Error("Giảm giá lớn hơn hoặc bằng 0")
                       );
                     } else if (value > 100) {
                       return Promise.reject(
-                        new Error("Discount must be less than 100")
+                        new Error("Giảm giá nhỏ hơn hoặc bằng 100")
                       );
                     }
                     return Promise.resolve();
@@ -758,15 +773,15 @@ function Products() {
             <Form.Item
               hasFeedback
               className=""
-              label="Stock"
+              label="Tồn kho"
               name="stock"
               rules={[
-                { required: true, message: "Can not be empty 'stock'" },
+                { required: true, message: "Tồn kho không để trống" },
                 {
                   validator: (_, value) => {
                     if (value < 0) {
                       return Promise.reject(
-                        new Error("Stock must be greater than 0")
+                        new Error("Tồn kho lớn hơn hoặc bằng 0")
                       );
                     }
                     return Promise.resolve();
@@ -780,32 +795,20 @@ function Products() {
             <Form.Item
               hasFeedback
               className=""
-              label="Unit"
+              label="Đơn vị"
               name="unit"
-              rules={[
-                { required: true, message: "Can not be empty 'unit'" },
-                {
-                  validator: (_, value) => {
-                    if (value < 0) {
-                      return Promise.reject(
-                        new Error("Unit must be greater than 0")
-                      );
-                    }
-                    return Promise.resolve();
-                  },
-                },
-              ]}
+              rules={[{ required: true, message: "Đơn vị không để trống" }]}
             >
-              <InputNumber className="w-[50%]" />
+              <Input placeholder={`"1kg" hoặc "1 lon" hoặc "1 cây"`} />
             </Form.Item>
             {/* Nhà cung cấp */}
             <Form.Item
-              label="Suppliers"
+              label="Nhà cung cấp"
               name="supplierId"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'suppliers'",
+                  message: "Nhà cung cấp không để trống",
                 },
               ]}
             >
@@ -823,24 +826,45 @@ function Products() {
             </Form.Item>
 
             {/* Mô tả */}
-            <Form.Item hasFeedback label="Description" name="description">
+            <Form.Item hasFeedback label="Mô tả" name="description">
               <TextArea rows={5} />
             </Form.Item>
           </Form>
         </Modal>
         <Modal
           centered
-          title="Garbage List"
+          title="Danh mục rác"
           open={editFormDelete}
           onCancel={() => {
             setEditFormDelete(false);
           }}
-          okText={<p className="text-black">Save</p>}
-          cancelText="Exit"
+          okText={<p className="text-black">Lưu</p>}
+          cancelText="Thoát"
           className="ant-modal"
         >
           <Table rowKey={"_id"} dataSource={isDelete} columns={columnsDelete} />
         </Modal>
+      </div>
+      <div className="flex mb-5">
+        <Button
+          className="bg-blue-500 font-bold mr-6"
+          onClick={() => {
+            setCreateFormVisible(true);
+            console.log("ok");
+          }}
+        >
+          <p className="text-white">Thêm sản phẩm</p>
+        </Button>
+        <Button
+          danger
+          className="text-right flex items-center"
+          onClick={() => {
+            setEditFormDelete(true);
+          }}
+        >
+          Thùng rác
+          <AiFillDelete size={"20px"} />
+        </Button>
       </div>
     </>
   );

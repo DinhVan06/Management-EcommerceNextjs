@@ -25,9 +25,8 @@ export default function Orders() {
   const [addProductsModalVisible, setAddProductsModalVisible] =
     React.useState<any>(false);
   const [employees, setEmployees] = React.useState<any>([]);
-  const [customers, setCustomers] = React.useState<any>([]);
   const [selectedOrder, setSelectedOrder] = React.useState<any>(null);
-  const [refresh, setRefresh] = React.useState<number>(0);
+  const [refresh, setRefresh] = React.useState<any>(false);
   const [createFormVisible, setCreateFormVisible] = React.useState<any>(false);
   const [loading, setLoading] = React.useState<any>(false);
   // Products
@@ -41,19 +40,10 @@ export default function Orders() {
   const [updateForm] = Form.useForm();
   // search form
   const [searchForm] = Form.useForm();
+
   React.useEffect(() => {
     axiosClient.get("/products").then((response) => {
       setProducts(response.data);
-    });
-  }, [refresh]);
-  React.useEffect(() => {
-    axiosClient.get("/employees").then((response) => {
-      setEmployees(response.data);
-    });
-  }, [refresh]);
-  React.useEffect(() => {
-    axiosClient.get("/customers").then((response) => {
-      setCustomers(response.data);
     });
   }, [refresh]);
 
@@ -67,6 +57,32 @@ export default function Orders() {
       setOrders(response.data);
     });
   }, [refresh]);
+
+  React.useEffect(() => {
+    axiosClient.get("/employees").then((response) => {
+      setEmployees(response.data);
+    });
+  }, []);
+
+  const renderStatus = (result: any) => {
+    return (
+      <div>
+        {result && result === "WAITING CONFIRMATION ORDER"
+          ? "Đang Chờ Xác Nhận"
+          : result === "CONFIRMED ORDER"
+          ? "Đã Xác Nhận Đơn Hàng"
+          : result === "SHIPPING CONFIRMATION"
+          ? "Xác Nhận Vận Chuyển"
+          : result === "DELIVERY IN PROGRESS"
+          ? "Đang Giao Hàng"
+          : result === "DELIVERY SUCCESS"
+          ? "Giao Hàng Thành Công"
+          : result === "RECEIVED ORDER"
+          ? "Đã Nhận Hàng"
+          : "Đã Hủy Đơn Hàng"}
+      </div>
+    );
+  };
 
   const productColumns = [
     {
@@ -111,13 +127,13 @@ export default function Orders() {
       },
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
       render: (text: any, record: any) => {
         return (
           <Button
             onClick={async () => {
-              setRefresh((pre) => pre + 1);
+              setRefresh(false);
               const currentProduct = record;
               const response = await axiosClient.get(
                 "orders/" + selectedOrder._id
@@ -135,7 +151,7 @@ export default function Orders() {
 
               setAddProductsModalVisible(false);
               message.success("Xóa thành công");
-              setRefresh((pre) => pre + 1);
+              setRefresh(true);
             }}
           >
             Xóa
@@ -173,7 +189,7 @@ export default function Orders() {
       dataIndex: "status",
       key: "status",
       render: (text: any, record: any) => {
-        return <p>{text}</p>;
+        return renderStatus(text);
       },
     },
     {
@@ -209,7 +225,7 @@ export default function Orders() {
       },
     },
     {
-      title: "Actions",
+      title: "",
       key: "actions",
       render: (text: any, record: any) => {
         return (
@@ -225,7 +241,7 @@ export default function Orders() {
     },
     // delete, update
     {
-      title: "Actions",
+      title: "",
       key: "actions",
       width: "1%",
       render: (text: any, record: any) => {
@@ -252,7 +268,7 @@ export default function Orders() {
                   .delete("/orders/" + id)
                   .then((response) => {
                     message.success("Hủy đơn hàng thành công!");
-                    setRefresh((pre) => pre + 1);
+                    setRefresh((pre: any) => pre + 1);
                   })
                   .catch((err) => {
                     message.error("Hủy đơn hàng thất bại!");
@@ -278,12 +294,11 @@ export default function Orders() {
       .then((response) => {
         message.success("Thêm Hóa Đơn thành công!");
         createForm.resetFields();
-        setRefresh((f) => f + 1);
+        setRefresh((f: any) => f + 1);
       })
       .catch((err) => {
         message.error("Thêm Hóa Đơn thất bại!");
       });
-    console.log("👌👌👌", values);
   };
   const onFinishFailed = (errors: any) => {
     console.log("💣💣💣 ", errors);
@@ -298,19 +313,15 @@ export default function Orders() {
         message.success("Cập nhật thành công ❤");
         updateForm.resetFields();
         // load lại form
-        setRefresh((pre) => pre + 1);
+        setRefresh((pre: any) => pre + 1);
         // đóng
         setEditFormVisible(false);
-        console.log();
       })
       .catch((err) => {
         message.error("Cập nhật thất bại 😥");
       });
-    console.log("❤", values);
   };
-  const onUpdateFinishFailed = (errors: any) => {
-    console.log("💣", errors);
-  };
+  const onUpdateFinishFailed = (errors: any) => {};
 
   // validate
   // validate phone number
@@ -338,533 +349,523 @@ export default function Orders() {
     }
   };
   return (
-    <>
-      <div className="text-blue-700 font-bold text-[25px] text-center mb-10">
-        Orders
+    <div>
+      <h1 className="text-center p-2 mb-5 text-xl">📑 Quản Lý Đơn Hàng 📑</h1>
+      {/* Tìm kiếm đơn hàng */}
+      <div className="border border-solid rounded-md">
+        <p className="text-center text-primary text-[17px] font-bold">
+          Tìm kiếm
+        </p>
       </div>
-      <div>
-        <div className="flex mb-5">
-          <Button
-            className="bg-blue-500 text-white font-bold mr-6"
-            onClick={() => {
-              setCreateFormVisible(true);
-              console.log("ok");
-            }}
-          >
-            Thêm mới đơn hàng
-          </Button>
-          {/* <Button
-            danger
-            className="text-right flex items-center"
-            onClick={() => {
-              setEditFormDelete(true);
-            }}
-          >
-            Recycle bin <AiFillDelete size={"20px"} />
-          </Button> */}
-        </div>
-        {/* Modal thêm mới sản phẩm */}
 
-        <Modal
-          centered
-          open={createFormVisible}
-          title="Thêm mới thông tin đơn hàng"
-          onOk={() => {
-            createForm.submit();
-            //setCreateFormVisible(false);
-          }}
-          onCancel={() => {
-            setCreateFormVisible(false);
-          }}
-          okText="Lưu"
-          cancelText="Đóng"
+      {/* Modal thêm mới sản phẩm */}
+      <Button
+        className="bg-blue-500 text-white font-bold mb-5 mt-5"
+        onClick={() => {
+          setCreateFormVisible(true);
+          console.log("ok");
+        }}
+      >
+        Thêm mới đơn hàng
+      </Button>
+      <Modal
+        centered
+        open={createFormVisible}
+        title="Thêm mới thông tin đơn hàng"
+        onOk={() => {
+          createForm.submit();
+          //setCreateFormVisible(false);
+        }}
+        onCancel={() => {
+          setCreateFormVisible(false);
+        }}
+        okText="Lưu"
+        cancelText="Đóng"
+      >
+        <Form
+          form={createForm}
+          name="create-form"
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
         >
-          <Form
-            form={createForm}
-            name="create-form"
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 16 }}
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
-          >
-            <div className="w-[100%]">
-              {/* Created Date */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Ngày tạo"
-                name="createdDate"
-                rules={[
-                  { required: true, message: "Không thể để trống" },
-                  {
-                    validator: dateOfValidator,
-                  },
-                  { type: "date", message: "Ngày không hợp lệ" },
-                ]}
-              >
-                <DatePicker format="YYYY/MM/DD" />
-              </Form.Item>
+          <div className="w-[100%]">
+            {/* Created Date */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Ngày tạo"
+              name="createdDate"
+              rules={[
+                { required: true, message: "Không thể để trống" },
+                {
+                  validator: dateOfValidator,
+                },
+                { type: "date", message: "Ngày không hợp lệ" },
+              ]}
+            >
+              <DatePicker format="YYYY/MM/DD" />
+            </Form.Item>
 
-              {/* Shipped Date */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Ngày giao"
-                name="shippedDate"
-                rules={[
-                  { required: true, message: "Không thể để trống" },
-                  {
-                    validator: dateOfValidator,
-                  },
-                  { type: "date", message: "Ngày không hợp lệ" },
-                ]}
-              >
-                <DatePicker format="YYYY/MM/DD" />
-              </Form.Item>
+            {/* Shipped Date */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Ngày giao"
+              name="shippedDate"
+              rules={[
+                {
+                  validator: dateOfValidator,
+                },
+                { type: "date", message: "Ngày không hợp lệ" },
+              ]}
+            >
+              <DatePicker format="YYYY/MM/DD" />
+            </Form.Item>
 
-              {/* Status */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Trạng thái đơn hàng"
-                name="status"
-                rules={[
-                  { required: true, message: "Không thể để trống" },
+            {/* Status */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Trạng thái đơn hàng"
+              name="status"
+              rules={[
+                { required: true, message: "Không thể để trống" },
+                {
+                  validator: (_, value) => {
+                    if (
+                      [
+                        "WAITING CONFIRMATION ORDER",
+                        "CONFIRMED ORDER",
+                        "SHIPPING CONFIRMATION",
+                        "DELIVERY IN PROGRESS",
+                        "DELIVERY SUCCESS",
+                        "RECEIVED ORDER",
+                        "CANCELED ORDER",
+                      ].includes(value)
+                    ) {
+                      return Promise.resolve();
+                    } else {
+                      return Promise.reject("Trạng thái không hợp lệ!");
+                    }
+                  },
+                },
+              ]}
+            >
+              <Select
+                options={[
                   {
-                    validator: (_, value) => {
-                      if (
-                        [
-                          "WAITING CONFIRMATION ORDER",
-                          "CONFIRMED ORDER",
-                          "SHIPPING CONFIRMATION",
-                          "DELIVERY IN PROGRESS",
-                          "DELIVERY SUCCESS",
-                          "RECEIVED ORDER",
-                          "CANCELED ORDER",
-                        ].includes(value)
-                      ) {
-                        return Promise.resolve();
-                      } else {
-                        return Promise.reject("Trạng thái không hợp lệ!");
-                      }
-                    },
+                    value: "WAITING CONFIRMATION ORDER",
+                    label: "Đang Chờ Xác Nhận",
                   },
                 ]}
-              >
-                <Select
-                  options={[
-                    {
-                      value: "WAITING CONFIRMATION ORDER",
-                      label: "Đang Chờ Xác Nhận",
-                    },
-                    {
-                      value: "CONFIRMED ORDER",
-                      label: "Đã xác nhận đặt hàng",
-                    },
-                  ]}
-                />
-              </Form.Item>
-
-              {/* Description */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Mô tả"
-                name="description"
-              >
-                <Input />
-              </Form.Item>
-
-              {/* Shipping Address */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Địa chỉ giao hàng"
-                name="shippingAddress"
-                rules={[{ required: true, message: "Không thể để trống" }]}
-              >
-                <Input />
-              </Form.Item>
-
-              {/* Payment Type */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Hình thức thanh toán"
-                name="paymentType"
-                rules={[{ required: true, message: "Không thể để trống" }]}
-              >
-                <Select
-                  options={[
-                    {
-                      value: "MOMO",
-                      label: "MOMO",
-                    },
-                    {
-                      value: "CASH",
-                      label: "Thanh Toán Bằng Tiền Mặt",
-                    },
-                  ]}
-                />
-              </Form.Item>
-
-              {/* Customer */}
-              <Form.Item
-                className=""
-                label="Khách hàng"
-                name="fullName"
-                rules={[{ required: true, message: "Không thể để trống" }]}
-              >
-                <Input />
-              </Form.Item>
-              {/* PhoneNumber */}
-              <Form.Item
-                className=""
-                label="Số điện thoại"
-                name="phoneNumber"
-                rules={[
-                  {
-                    required: true,
-                    message: "Số điện thoại không được để trống!",
-                  },
-                  { min: 10, message: "Số điện thoại không quá 10 chữ số!" },
-                  { max: 10, message: "Số điện thoại không quá 10 chữ số!" },
-                  {
-                    validator: phoneValidator,
-                  },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-              {/* Employee */}
-              <Form.Item
-                className=""
-                label="Nhân viên"
-                name="employeeId"
-                rules={[{ required: true, message: "Không thể để trống" }]}
-              >
-                <Select
-                  options={
-                    employees &&
-                    employees.map((suplier: any) => {
-                      return {
-                        value: suplier._id,
-                        label: suplier.fullName,
-                      };
-                    })
-                  }
-                />
-              </Form.Item>
-            </div>
-          </Form>
-        </Modal>
-
-        <Modal
-          centered
-          title="Chi tiết đơn hàng"
-          open={selectedOrder}
-          onCancel={() => {
-            setSelectedOrder(null);
-          }}
-        >
-          {selectedOrder && (
-            <div>
-              <Descriptions
-                bordered
-                column={1}
-                labelStyle={{ fontWeight: "700" }}
-              >
-                <Descriptions.Item label="Trạng thái">
-                  {selectedOrder.status}
-                </Descriptions.Item>
-                <Descriptions.Item label="Khách hàng">
-                  {selectedOrder.fullName}
-                </Descriptions.Item>
-                <Descriptions.Item label="Số điện thoại">
-                  {selectedOrder.phoneNumber}
-                </Descriptions.Item>
-                <Descriptions.Item label="Ngày tạo hóa đơn">
-                  {selectedOrder.createdDate}
-                </Descriptions.Item>
-                <Descriptions.Item label="Ngày giao">
-                  {selectedOrder.shippedDate}
-                </Descriptions.Item>
-                <Descriptions.Item label="Địa chỉ giao hàng">
-                  {selectedOrder.shippingAddress}
-                </Descriptions.Item>
-                <Descriptions.Item label="Nhân viên">
-                  {selectedOrder.employee?.fullName}
-                </Descriptions.Item>
-              </Descriptions>
-              <Divider />
-              <Table
-                rowKey="_id"
-                dataSource={selectedOrder.orderDetails}
-                columns={productColumns}
               />
+            </Form.Item>
 
-              <Button
-                onClick={() => {
-                  setAddProductsModalVisible(true);
-                  setRefresh((pre) => pre + 1);
-                }}
-              >
-                Thêm sản phẩm
-              </Button>
+            {/* Description */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Mô tả"
+              name="description"
+            >
+              <Input />
+            </Form.Item>
 
-              <Modal
-                centered
-                title="Danh sách sản phẩm"
-                open={addProductsModalVisible}
-                onCancel={() => {
-                  setAddProductsModalVisible(false);
-                }}
-                onOk={() => {
-                  setRefresh((pre) => pre + 1);
-                }}
-              >
-                {products &&
-                  products.map((product: any) => {
-                    return (
-                      <Card key={product?._id}>
-                        <strong>{product?.name}</strong>
-                        <Button
-                          onClick={async () => {
-                            const response = await axiosClient.get(
-                              "orders/" + selectedOrder._id
-                            );
-                            const currentOrder = response.data;
-                            const { orderDetails } = currentOrder;
-                            const found = orderDetails.find(
-                              (x: any) => x.productId === product._id
-                            );
-                            if (found) {
-                              found.quantity++;
-                            } else {
-                              orderDetails.push({
-                                productId: product._id,
-                                quantity: 1,
-                              });
+            {/* Shipping Address */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Địa chỉ giao hàng"
+              name="shippingAddress"
+              rules={[{ required: true, message: "Không thể để trống" }]}
+            >
+              <Input />
+            </Form.Item>
+
+            {/* Payment Type */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Hình thức thanh toán"
+              name="paymentType"
+              rules={[{ required: true, message: "Không thể để trống" }]}
+            >
+              <Select
+                options={[
+                  {
+                    value: "MOMO",
+                    label: "MOMO",
+                  },
+                  {
+                    value: "CASH",
+                    label: "Thanh Toán Bằng Tiền Mặt",
+                  },
+                ]}
+              />
+            </Form.Item>
+
+            {/* Customer */}
+            <Form.Item
+              className=""
+              label="Khách hàng"
+              name="fullName"
+              rules={[{ required: true, message: "Không thể để trống" }]}
+            >
+              <Input />
+            </Form.Item>
+            {/* PhoneNumber */}
+            <Form.Item
+              className=""
+              label="Số điện thoại"
+              name="phoneNumber"
+              rules={[
+                {
+                  required: true,
+                  message: "Số điện thoại không được để trống!",
+                },
+                { min: 10, message: "Số điện thoại không quá 10 chữ số!" },
+                { max: 10, message: "Số điện thoại không quá 10 chữ số!" },
+                {
+                  validator: phoneValidator,
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            {/* Employee */}
+            <Form.Item
+              className=""
+              label="Nhân viên"
+              name="employeeId"
+              rules={[{ required: true, message: "Không thể để trống" }]}
+            >
+              <Select
+                options={
+                  employees &&
+                  employees.map((suplier: any) => {
+                    return {
+                      value: suplier._id,
+                      label: suplier.fullName,
+                    };
+                  })
+                }
+              />
+            </Form.Item>
+          </div>
+        </Form>
+      </Modal>
+
+      <Modal
+        centered
+        title="Chi tiết đơn hàng"
+        open={selectedOrder}
+        onCancel={() => {
+          setSelectedOrder(null);
+        }}
+      >
+        {selectedOrder && (
+          <div>
+            <Descriptions
+              bordered
+              column={1}
+              labelStyle={{ fontWeight: "700" }}
+            >
+              <Descriptions.Item label="Trạng thái">
+                {renderStatus(selectedOrder.status)}
+              </Descriptions.Item>
+              <Descriptions.Item label="Khách hàng">
+                {selectedOrder.fullName}
+              </Descriptions.Item>
+              <Descriptions.Item label="Số điện thoại">
+                {selectedOrder.phoneNumber}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngày tạo hóa đơn">
+                {selectedOrder.createdDate}
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngày giao">
+                {selectedOrder.shippedDate}
+              </Descriptions.Item>
+              <Descriptions.Item label="Địa chỉ giao hàng">
+                {selectedOrder.shippingAddress}
+              </Descriptions.Item>
+              <Descriptions.Item label="Nhân viên">
+                {selectedOrder.employee?.fullName}
+              </Descriptions.Item>
+            </Descriptions>
+            <Divider />
+            <Table
+              rowKey="_id"
+              dataSource={selectedOrder.orderDetails}
+              columns={productColumns}
+            />
+
+            <Button
+              onClick={() => {
+                setAddProductsModalVisible(true);
+                setRefresh(false);
+              }}
+            >
+              Thêm sản phẩm
+            </Button>
+
+            <Modal
+              centered
+              title="Danh sách sản phẩm"
+              open={addProductsModalVisible}
+              onCancel={() => {
+                setAddProductsModalVisible(false);
+              }}
+              onOk={() => {
+                setRefresh(true);
+              }}
+            >
+              {products &&
+                products.map((product: any) => {
+                  return (
+                    <Card key={product._id}>
+                      <strong>{product.name}</strong>
+                      <Button
+                        onClick={async () => {
+                          const response = await axiosClient.get(
+                            "orders/" + selectedOrder._id
+                          );
+                          const currentOrder = response.data;
+                          const { orderDetails } = currentOrder;
+                          const found = orderDetails.find(
+                            (x: any) => x.productId === product._id
+                          );
+                          if (found) {
+                            found.quantity++;
+                          } else {
+                            orderDetails.push({
+                              productId: product._id,
+                              quantity: 1,
+                            });
+                          }
+
+                          await axiosClient.patch(
+                            "orders/" + selectedOrder._id,
+                            {
+                              orderDetails,
                             }
+                          );
+                          setAddProductsModalVisible(false);
+                          // RELOAD //
 
-                            await axiosClient.patch(
-                              "orders/" + selectedOrder._id,
-                              {
-                                orderDetails,
-                              }
-                            );
+                          setRefresh(true);
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </Card>
+                  );
+                })}
+            </Modal>
+          </div>
+        )}
+      </Modal>
 
-                            setAddProductsModalVisible(false);
-                            // RELOAD //
-
-                            setRefresh((pre) => pre + 1);
-                          }}
-                        >
-                          Add
-                        </Button>
-                      </Card>
-                    );
-                  })}
-              </Modal>
-            </div>
-          )}
-        </Modal>
-
-        {/* update form */}
-        <Modal
-          centered
-          open={editFormVisible}
-          title="Cập nhật thông tin"
-          onOk={() => {
-            updateForm.submit();
-          }}
-          onCancel={() => {
-            setEditFormVisible(false);
-          }}
-          okText="Lưu thông tin"
-          cancelText="Đóng"
+      {/* update form */}
+      <Modal
+        centered
+        open={editFormVisible}
+        title="Cập nhật thông tin"
+        onOk={() => {
+          updateForm.submit();
+        }}
+        onCancel={() => {
+          setEditFormVisible(false);
+        }}
+        okText="Lưu thông tin"
+        cancelText="Đóng"
+      >
+        <Form
+          form={updateForm}
+          name="update-form"
+          labelCol={{ span: 10 }}
+          wrapperCol={{ span: 16 }}
+          initialValues={{ remember: true }}
+          onFinish={onUpdateFinish}
+          onFinishFailed={onUpdateFinishFailed}
+          autoComplete="off"
+          disabled={
+            selectedRecord &&
+            selectedRecord.status === "WAITING CONFIRMATION ORDER"
+              ? false
+              : true
+          }
         >
-          <Form
-            form={updateForm}
-            name="update-form"
-            labelCol={{ span: 10 }}
-            wrapperCol={{ span: 16 }}
-            initialValues={{ remember: true }}
-            onFinish={onUpdateFinish}
-            onFinishFailed={onUpdateFinishFailed}
-            autoComplete="off"
-          >
-            <div className="w-[80%]">
-              {/* Created Date */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Ngày tạo"
-                name="createdDate"
-                rules={[
-                  { required: true, message: "Không thể để trống" },
-                  {
-                    validator: dateOfValidator,
+          <div className="w-[80%]">
+            {/* Created Date */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Ngày tạo"
+              name="createdDate"
+              rules={[
+                { required: true, message: "Không thể để trống" },
+                {
+                  validator: dateOfValidator,
+                },
+                { type: "date", message: "Ngày không hợp lệ" },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+
+            {/* Shipped Date */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Ngày giao"
+              name="shippedDate"
+              rules={[
+                {
+                  validator: dateOfValidator,
+                },
+                { type: "date", message: "Ngày không hợp lệ" },
+              ]}
+            >
+              <Input value={Date.now()} />
+            </Form.Item>
+
+            {/* Status */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Trạng thái đơn hàng"
+              name="status"
+              rules={[
+                { required: true, message: "Không thể để trống" },
+                {
+                  validator: (_, value) => {
+                    if (
+                      [
+                        "WAITING CONFIRMATION ORDER",
+                        "CONFIRMED ORDER",
+                        "SHIPPING CONFIRMATION",
+                        "DELIVERY IN PROGRESS",
+                        "DELIVERY SUCCESS",
+                        "RECEIVED ORDER",
+                        "CANCELED ORDER",
+                      ].includes(value)
+                    ) {
+                      return Promise.resolve();
+                    } else {
+                      return Promise.reject("Trạng thái không hợp lệ!");
+                    }
                   },
-                  { type: "date", message: "Ngày không hợp lệ" },
-                ]}
-              >
-                <Input />
-              </Form.Item>
-
-              {/* Shipped Date */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Ngày giao"
-                name="shippedDate"
-                rules={[
-                  { required: true, message: "Không thể để trống" },
+                },
+              ]}
+            >
+              <Select
+                options={[
                   {
-                    validator: dateOfValidator,
+                    value: "WAITING CONFIRMATION ORDER",
+                    label: "Đang Chờ Xác Nhận",
                   },
-                  { type: "date", message: "Ngày không hợp lệ" },
-                ]}
-              >
-                <Input value={Date.now()} />
-              </Form.Item>
-
-              {/* Status */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Trạng thái đơn hàng"
-                name="status"
-                rules={[
-                  { required: true, message: "Không thể để trống" },
                   {
-                    validator: (_, value) => {
-                      if (
-                        [
-                          "WAITING CONFIRMATION ORDER",
-                          "CONFIRMED ORDER",
-                          "SHIPPING CONFIRMATION",
-                          "DELIVERY IN PROGRESS",
-                          "DELIVERY SUCCESS",
-                          "RECEIVED ORDER",
-                          "CANCELED ORDER",
-                        ].includes(value)
-                      ) {
-                        return Promise.resolve();
-                      } else {
-                        return Promise.reject("Trạng thái không hợp lệ!");
-                      }
-                    },
-                  },
-                ]}
-              >
-                <Select
-                  options={[
-                    {
-                      value: "WAITING CONFIRMATION ORDER",
-                      label: "Đang Chờ Xác Nhận",
-                    },
-                    {
-                      value: "CONFIRMED ORDER",
-                      label: "Đã Xác Nhận Đơn Hàng",
-                    },
-                  ]}
-                />
-              </Form.Item>
-
-              {/* Description */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Mô tả"
-                name="description"
-              >
-                <Input />
-              </Form.Item>
-
-              {/* Shipping Address */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Địa chỉ giao hàng"
-                name="shippingAddress"
-                rules={[{ required: true, message: "Không thể để trống" }]}
-              >
-                <Input />
-              </Form.Item>
-
-              {/* Payment Type */}
-              <Form.Item
-                hasFeedback
-                className=""
-                label="Hình thức thanh toán"
-                name="paymentType"
-                rules={[{ required: true, message: "Không thể để trống" }]}
-              >
-                <Select
-                  options={[
-                    {
-                      value: "MOMO",
-                      label: "MOMO",
-                    },
-                    {
-                      value: "CASH",
-                      label: "Thanh Toán Bằng Tiền Mặt",
-                    },
-                  ]}
-                />
-              </Form.Item>
-
-              {/* Customer */}
-              <Form.Item
-                className=""
-                label="Khách hàng"
-                name="fullName"
-                rules={[{ required: true, message: "Không thể để trống" }]}
-              >
-                <Input />
-              </Form.Item>
-              {/* PhoneNumber */}
-              <Form.Item
-                className=""
-                label="Số điện thoại"
-                name="phoneNumber"
-                rules={[
-                  { required: true, message: "Không thể để trống" },
-                  {
-                    validator: phoneValidator,
+                    value: "CONFIRMED ORDER",
+                    label: "Đã Xác Nhận Đơn Hàng",
                   },
                 ]}
-              >
-                <Input />
-              </Form.Item>
-              {/* Employee */}
-              <Form.Item
-                className=""
-                label="Nhân viên"
-                name="employeeId"
-                rules={[{ required: true, message: "Không thể để trống" }]}
-              >
-                <Select
-                  options={
-                    employees &&
-                    employees.map((employee: any) => {
-                      return {
-                        value: employee._id,
-                        label: employee.fullName,
-                      };
-                    })
-                  }
-                />
-              </Form.Item>
-            </div>
-          </Form>
-        </Modal>
+              />
+            </Form.Item>
 
-        <Table rowKey="_id" dataSource={orders} columns={columns} />
-      </div>
-    </>
+            {/* Description */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Mô tả"
+              name="description"
+            >
+              <Input />
+            </Form.Item>
+
+            {/* Shipping Address */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Địa chỉ giao hàng"
+              name="shippingAddress"
+              rules={[{ required: true, message: "Không thể để trống" }]}
+            >
+              <Input />
+            </Form.Item>
+
+            {/* Payment Type */}
+            <Form.Item
+              hasFeedback
+              className=""
+              label="Hình thức thanh toán"
+              name="paymentType"
+              rules={[{ required: true, message: "Không thể để trống" }]}
+            >
+              <Select
+                options={[
+                  {
+                    value: "MOMO",
+                    label: "MOMO",
+                  },
+                  {
+                    value: "CASH",
+                    label: "Thanh Toán Bằng Tiền Mặt",
+                  },
+                ]}
+              />
+            </Form.Item>
+
+            {/* Customer */}
+            <Form.Item
+              className=""
+              label="Khách hàng"
+              name="fullName"
+              rules={[{ required: true, message: "Không thể để trống" }]}
+            >
+              <Input />
+            </Form.Item>
+            {/* PhoneNumber */}
+            <Form.Item
+              className=""
+              label="Số điện thoại"
+              name="phoneNumber"
+              rules={[
+                { required: true, message: "Không thể để trống" },
+                {
+                  validator: phoneValidator,
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+            {/* Employee */}
+            <Form.Item
+              className=""
+              label="Nhân viên"
+              name="employeeId"
+              rules={[{ required: true, message: "Không thể để trống" }]}
+            >
+              <Select
+                options={
+                  employees &&
+                  employees.map((employee: any) => {
+                    return {
+                      value: employee._id,
+                      label: employee.fullName,
+                    };
+                  })
+                }
+              />
+            </Form.Item>
+          </div>
+        </Form>
+      </Modal>
+
+      <Table rowKey="_id" dataSource={orders} columns={columns} />
+    </div>
   );
 }
