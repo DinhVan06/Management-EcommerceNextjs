@@ -7,23 +7,23 @@ import { Menu } from "antd";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 const items = [
-  { label: "Home", key: "home", icon: <HomeOutlined /> }, // remember to pass the key prop
-  { label: "Settings", key: "settings", icon: <SettingOutlined /> }, // which is required
+  { label: "Trang chủ", key: "home", icon: <HomeOutlined /> }, // remember to pass the key prop
+  { label: "Cài đặt", key: "settings", icon: <SettingOutlined /> }, // which is required
   {
-    label: "Managements",
+    label: "Quản trị",
     key: "management",
     icon: <DatabaseOutlined />,
     children: [
-      { label: "Categories", key: "management-categories" },
-      { label: "Suppliers", key: "management-suppliers" },
+      { label: "Danh mục", key: "management-categories" },
+      { label: "Nhà cung cấp", key: "management-suppliers" },
       {
-        label: "Products",
+        label: "Sản phẩm",
         key: "management-products",
       },
-      { label: "Orders", key: "management-orders" },
-      { label: "Customers", key: "management-customers" },
+      { label: "Đơn hàng", key: "management-orders" },
+      { label: "Khách hàng", key: "management-customers" },
       {
-        label: "Employees",
+        label: "Nhân viên",
         key: "management-employees",
       },
     ],

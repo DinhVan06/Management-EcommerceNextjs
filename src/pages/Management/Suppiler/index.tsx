@@ -73,26 +73,24 @@ function Suppliers() {
           <Space>
             {/* delete */}
             <Popconfirm
-              title="Are you sure you want to delete?"
+              title="Bạn có chắc chắn muốn xóa?"
               onConfirm={() => {
                 //delete
                 const id = record._id;
                 axiosClient
                   .patch("/suppliers/" + id, { isDelete: true })
                   .then((response: any) => {
-                    message.success(
-                      "Deleted items have been stored in garbage suppliers"
-                    );
+                    message.success("Xóa thành công và thêm vào danh sách rác");
                     setRefresh((pre) => pre + 1);
                   })
                   .catch((err: any) => {
-                    message.error("Delete failed");
+                    message.error("Xóa thất bại");
                   });
                 //console.log("delete", record);
               }}
               onCancel={() => {}}
-              okText={<p className="text-black">yes</p>}
-              cancelText="No"
+              okText={<p className="text-black">Có</p>}
+              cancelText="Không"
             >
               <Button danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -142,24 +140,24 @@ function Suppliers() {
           <Space>
             {/* delete */}
             <Popconfirm
-              title="Are you sure you want to delete it permanently?"
+              title="Bạn chắc chắn muốn xóa vĩnh viễn?"
               onConfirm={() => {
                 //delete
                 const id = record._id;
                 axiosClient
                   .delete("/suppliers/" + id)
                   .then((response: any) => {
-                    message.success("Delete successfully");
+                    message.success("Xóa thành công");
                     setRefresh((pre) => pre + 1);
                   })
                   .catch((err: any) => {
-                    message.error("Delete failed");
+                    message.error("Xóa thất bại");
                   });
                 //console.log("delete", record);
               }}
               onCancel={() => {}}
-              okText={<p className="text-black">yes</p>}
-              cancelText="No"
+              okText={<p className="text-black">Có</p>}
+              cancelText="Không"
             >
               <Button danger icon={<DeleteOutlined />} />
             </Popconfirm>
@@ -171,20 +169,20 @@ function Suppliers() {
                 axiosClient
                   .patch("/suppliers/" + id, { isDelete: false })
                   .then((response) => {
-                    message.success("Restore successfully");
+                    message.success("Khôi phục");
                     setRefresh((pre) => pre + 1);
                     setEditFormDelete(false);
                   })
                   .catch((err) => {
                     console.log(err);
-                    message.error("Restore failed");
+                    message.error("Khôi phục");
                   });
               }}
               className="flex items-center bg-blue-400 rounded-2xl text-white"
             >
               <div className="flex hover:text-black">
                 <FaTrashRestore size={"16px"} style={{ marginRight: "5px" }} />
-                Restore
+                Khôi phục
               </div>
             </Button>
           </Space>
@@ -214,12 +212,12 @@ function Suppliers() {
     axiosClient
       .post("/suppliers", values)
       .then((response) => {
-        message.success("Add success");
+        message.success("Thêm thành công");
         createForm.resetFields(); //reset input form
         setRefresh((pre) => pre + 1);
       })
       .catch((err) => {
-        message.error("Add failed!");
+        message.error("Thêm thất bại!");
       });
     console.log("👌👌👌", values);
   };
@@ -230,13 +228,13 @@ function Suppliers() {
     axiosClient
       .patch("/suppliers/" + selectedRecord._id, values)
       .then((response) => {
-        message.success("Update success");
+        message.success("Cập nhật thành công");
         updateForm.resetFields();
         setRefresh((pre) => pre + 1);
         setEditFormVisible(false);
       })
       .catch((err) => {
-        message.error("Update failed!");
+        message.error("Cập nhật thất bại!");
       });
   };
 
@@ -249,7 +247,7 @@ function Suppliers() {
     const phoneNumberPattern =
       /^(0?)(3[2-9]|5[6|8|9]|7[0|6-9]|8[0-6|8|9]|9[0-4|6-9])[0-9]{7}$/;
     if (value && !phoneNumberPattern.test(value)) {
-      callback("Invalid phone number");
+      callback("Số điện thoại không hợp lệ");
     } else {
       callback();
     }
@@ -257,35 +255,20 @@ function Suppliers() {
   return (
     <>
       <div className="text-blue-700 font-bold text-[25px] text-center mb-10">
-        Suppliers
+        NHÀ CUNG CẤP
       </div>
-
-      <div>
-        <div className="flex mb-5">
-          <Button
-            className="bg-blue-500 font-bold mr-6"
-            onClick={() => {
-              setCreateFormVisible(true);
-              console.log("ok");
-            }}
-          >
-            <p className="text-white">Add new category</p>
-          </Button>
-          <Button
-            danger
-            className="text-right flex items-center"
-            onClick={() => {
-              setEditFormDelete(true);
-            }}
-          >
-            Recycle bin <AiFillDelete size={"20px"} />
-          </Button>
+      <div className="flex mb-4">
+        <p className="flex-auto font-bold">Danh sách nhà cung cấp</p>
+        <div className="total-categories font-bold">
+          <span className="text-black">Tổng: </span>
+          <span className="text-red-600">{suppliers.length} nhà cung cấp</span>
         </div>
-
+      </div>
+      <div>
         <Modal
           centered
           open={createFormVisible}
-          title="Add new Category"
+          title="Thêm mới nhà cung cấp"
           onOk={() => {
             createForm.submit();
             //setCreateFormVisible(false);
@@ -293,8 +276,8 @@ function Suppliers() {
           onCancel={() => {
             setCreateFormVisible(false);
           }}
-          okText={<p className="text-black">Add</p>}
-          cancelText="Close"
+          okText={<p className="text-black">Thêm</p>}
+          cancelText="Thóat"
         >
           <Form
             form={createForm}
@@ -310,12 +293,12 @@ function Suppliers() {
             <Form.Item
               hasFeedback
               className=""
-              label="Supplier Name"
+              label="Tên nhà cung cấp"
               name="name"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'suppliers name'",
+                  message: "Tên nhà cung cấp không để trống",
                 },
               ]}
             >
@@ -328,8 +311,8 @@ function Suppliers() {
               label="Email"
               name="email"
               rules={[
-                { required: true, message: "Can not be empty 'email'" },
-                { type: "email", message: "Invalid email" },
+                { required: true, message: "Email không để trống" },
+                { type: "email", message: "Email không đúng đinh dạng" },
               ]}
             >
               <Input />
@@ -338,12 +321,12 @@ function Suppliers() {
             <Form.Item
               hasFeedback
               className=""
-              label="Phone number"
+              label="SĐT"
               name="phoneNumber"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'phone number'",
+                  message: "Số điện thoại không để trống",
                 },
                 {
                   validator: phoneValidator,
@@ -356,11 +339,9 @@ function Suppliers() {
             <Form.Item
               hasFeedback
               className=""
-              label="Address"
+              label="Địa chỉ"
               name="address"
-              rules={[
-                { required: true, message: "Can not be empty 'address'" },
-              ]}
+              rules={[{ required: true, message: "Địa chỉ không để trống" }]}
             >
               <Input />
             </Form.Item>
@@ -373,15 +354,15 @@ function Suppliers() {
         <Modal
           centered
           open={editFormVisible}
-          title="Update Category"
+          title="Cập nhật nhà cung cấp"
           onOk={() => {
             updateForm.submit();
           }}
           onCancel={() => {
             setEditFormVisible(false);
           }}
-          okText={<p className="text-black">Save</p>}
-          cancelText="Close"
+          okText={<p className="text-black">Lưu</p>}
+          cancelText="Thoát"
         >
           <Form
             form={updateForm}
@@ -397,12 +378,12 @@ function Suppliers() {
             <Form.Item
               hasFeedback
               className=""
-              label="Supplier Name"
+              label="Tên nhà cung cấp"
               name="name"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'suppliers name'",
+                  message: "Nhà cung cấp không để trống",
                 },
               ]}
             >
@@ -415,8 +396,8 @@ function Suppliers() {
               label="Email"
               name="email"
               rules={[
-                { required: true, message: "Can not be empty 'email'" },
-                { type: "email", message: "Invalid email" },
+                { required: true, message: "Email không để trống" },
+                { type: "email", message: "Email không đúng định dạng" },
               ]}
             >
               <Input />
@@ -425,12 +406,12 @@ function Suppliers() {
             <Form.Item
               hasFeedback
               className=""
-              label="Phone number"
+              label="SĐT"
               name="phoneNumber"
               rules={[
                 {
                   required: true,
-                  message: "Can not be empty 'phone number'",
+                  message: "Số điện thoại không để trống",
                 },
                 {
                   validator: phoneValidator,
@@ -443,11 +424,9 @@ function Suppliers() {
             <Form.Item
               hasFeedback
               className=""
-              label="Address"
+              label="Địa chỉ"
               name="address"
-              rules={[
-                { required: true, message: "Can not be empty 'address'" },
-              ]}
+              rules={[{ required: true, message: "Địa chỉ không để trống" }]}
             >
               <Input />
             </Form.Item>
@@ -455,17 +434,36 @@ function Suppliers() {
         </Modal>
         <Modal
           centered
-          title="Garbage List"
+          title="Danh mục rác"
           open={editFormDelete}
           onCancel={() => {
             setEditFormDelete(false);
           }}
-          okText={<p className="text-black">Save</p>}
-          cancelText="Exit"
+          okText={<p className="text-black">Lưu</p>}
+          cancelText="Thoát"
           className="ant-modal"
         >
           <Table rowKey={"_id"} dataSource={isDelete} columns={columnDelete} />
         </Modal>
+      </div>
+      <div className="flex mt-5">
+        <Button
+          className="bg-blue-500 font-bold mr-6"
+          onClick={() => {
+            setCreateFormVisible(true);
+          }}
+        >
+          <p className="text-white">Thêm nhà cung cấp</p>
+        </Button>
+        <Button
+          danger
+          className="text-right flex items-center"
+          onClick={() => {
+            setEditFormDelete(true);
+          }}
+        >
+          Thùng rác <AiFillDelete size={"20px"} />
+        </Button>
       </div>
     </>
   );
